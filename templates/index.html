@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Price Predictor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 400px;
+    }
+    h1 { font-size: 22px; margin-bottom: 6px; color: #f1f5f9; }
+    .subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+    label { font-size: 12px; color: #94a3b8; display: block; margin-bottom: 6px; }
+    input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 15px;
+      margin-bottom: 16px;
+      outline: none;
+    }
+    input:focus { border-color: #22d3ee; }
+    button {
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: 8px;
+      background: #0ea5e9;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:hover { background: #0284c7; }
+    button:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+    .result {
+      margin-top: 20px;
+      padding: 16px;
+      background: #0f172a;
+      border: 1px solid #1e3a5f;
+      border-radius: 10px;
+      display: none;
+    }
+    .result .label { font-size: 11px; color: #64748b; margin-bottom: 4px; }
+    .result .price { font-size: 32px; font-weight: 700; color: #22d3ee; }
+    .result .info { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+    .loading { color: #64748b; font-size: 13px; margin-top: 12px; text-align: center; display: none; }
+    .error { background: #1a0a0a; border-color: #7f1d1d; }
+    .error .price { font-size: 14px; color: #f87171; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Stock Predictor</h1>
+    <p class="subtitle">ML-powered next-day price prediction</p>
+
+    <label for="ticker">Stock Symbol</label>
+    <input type="text" id="ticker" placeholder="e.g. AAPL, TSLA, MSFT" value="AAPL">
+
+    <button id="predictBtn" onclick="getPrediction()">Predict Price</button>
+    <p class="loading" id="loading">Fetching data & predicting...</p>
+
+    <div class="result" id="result">
+      <div class="label">Predicted next-day closing price</div>
+      <div class="price" id="price">—</div>
+      <div class="info" id="info"></div>
+    </div>
+  </div>
+
+  <script>
+    async function getPrediction() {
+      const ticker = document.getElementById("ticker").value.trim().toUpperCase();
+      if (!ticker) { alert("Please enter a stock symbol!"); return; }
+
+      const btn = document.getElementById("predictBtn");
+      const loading = document.getElementById("loading");
+      const result = document.getElementById("result");
+
+      btn.disabled = true;
+      btn.textContent = "Predicting...";
+      loading.style.display = "block";
+      result.style.display = "none";
+      result.className = "result";
+
+      try {
+        const res = await fetch(`/predict?ticker=${ticker}`);
+        const data = await res.json();
+
+        if (data.status === "success") {
+          document.getElementById("price").textContent = "$" + data.predicted_price;
+          document.getElementById("info").textContent = ticker + " · USD · Next Trading Day Estimate";
+        } else {
+          result.classList.add("error");
+          document.getElementById("price").textContent = "Error: " + data.message;
+        }
+        result.style.display = "block";
+      } catch (err) {
+        result.classList.add("error");
+        result.style.display = "block";
+        document.getElementById("price").textContent = "Could not connect to server.";
+      }
+
+      btn.disabled = false;
+      btn.textContent = "Predict Price";
+      loading.style.display = "none";
+    }
+  </script>
+</body>
+</html>
