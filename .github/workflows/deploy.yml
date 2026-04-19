@@ -20,5 +20,7 @@ jobs:
           git pull origin main
           pip3 install -r requirements.txt --break-system-packages --quiet
           pkill -f "python3 app.py" || true
+          sleep 2
           nohup python3 app.py > app.log 2>&1 &
+          sleep 3
           echo "Deployment successful!"
