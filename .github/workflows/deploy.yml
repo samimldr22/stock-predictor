@@ -15,12 +15,13 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
+        request_pty: true
         script: |
           cd stock-predictor
           git pull origin main
           pip3 install -r requirements.txt --break-system-packages --quiet
           pkill -f "python3 app.py" || true
           sleep 2
-          nohup python3 app.py > app.log 2>&1 &
-          sleep 3
+          setsid python3 app.py > app.log 2>&1 < /dev/null &
+          disown
           echo "Deployment successful!"
