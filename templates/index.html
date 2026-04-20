@@ -3,85 +3,344 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stock Price Predictor</title>
+  <title>StockAI — Price Predictor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f172a;
+      font-family: 'Inter', sans-serif;
+      background: #080c14;
       color: #e2e8f0;
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 2rem;
     }
-    .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 16px;
-      padding: 2.5rem;
-      width: 400px;
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(rgba(0,200,150,0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0,200,150,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
     }
-    h1 { font-size: 22px; margin-bottom: 6px; color: #f1f5f9; }
-    .subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
-    label { font-size: 12px; color: #94a3b8; display: block; margin-bottom: 6px; }
-    input {
+
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-family: 'Space Mono', monospace;
+      background: rgba(0,200,150,0.1);
+      border: 1px solid rgba(0,200,150,0.3);
+      color: #00c896;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      color: #f8fafc;
+    }
+
+    h1 span { color: #00c896; }
+
+    .subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 8px;
+    }
+
+    .main-card {
+      background: #0d1420;
+      border: 1px solid #1e2d40;
+      border-radius: 20px;
+      padding: 2rem;
       width: 100%;
-      padding: 10px 14px;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      background: #0f172a;
+      max-width: 520px;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+      background: #111827;
+      border: 1px solid #1e2d40;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      color: #00c896;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #1e2d40;
+      margin: 1.5rem 0;
+    }
+
+    .input-label {
+      font-size: 11px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px 16px;
+      background: #111827;
+      border: 1px solid #1e2d40;
+      border-radius: 10px;
       color: #f1f5f9;
       font-size: 15px;
-      margin-bottom: 16px;
+      font-family: 'Space Mono', monospace;
       outline: none;
+      transition: border-color 0.2s;
+      text-transform: uppercase;
     }
-    input:focus { border-color: #22d3ee; }
+
+    input:focus { border-color: #00c896; }
+
     button {
-      width: 100%;
-      padding: 11px;
+      padding: 12px 20px;
+      background: #00c896;
       border: none;
-      border-radius: 8px;
-      background: #0ea5e9;
-      color: white;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    button:hover { background: #0284c7; }
-    button:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
-    .result {
-      margin-top: 20px;
-      padding: 16px;
-      background: #0f172a;
-      border: 1px solid #1e3a5f;
       border-radius: 10px;
+      color: #080c14;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    button:hover { background: #00b386; transform: translateY(-1px); }
+    button:disabled { background: #1e2d40; color: #475569; cursor: not-allowed; transform: none; }
+
+    .result-area {
+      margin-top: 1.5rem;
       display: none;
     }
-    .result .label { font-size: 11px; color: #64748b; margin-bottom: 4px; }
-    .result .price { font-size: 32px; font-weight: 700; color: #22d3ee; }
-    .result .info { font-size: 13px; color: #94a3b8; margin-top: 4px; }
-    .loading { color: #64748b; font-size: 13px; margin-top: 12px; text-align: center; display: none; }
-    .error { background: #1a0a0a; border-color: #7f1d1d; }
-    .error .price { font-size: 14px; color: #f87171; }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .result-title {
+      font-size: 11px;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .live-dot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: #00c896;
+    }
+
+    .live-dot::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #00c896;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .price-display {
+      background: #111827;
+      border: 1px solid #1e2d40;
+      border-radius: 14px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .price-ticker {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: #475569;
+      margin-bottom: 8px;
+      letter-spacing: 0.1em;
+    }
+
+    .price-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 42px;
+      font-weight: 700;
+      color: #00c896;
+      letter-spacing: -1px;
+    }
+
+    .price-note {
+      font-size: 11px;
+      color: #475569;
+      margin-top: 8px;
+    }
+
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .metric-box {
+      background: #111827;
+      border: 1px solid #1e2d40;
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      color: #e2e8f0;
+    }
+
+    .error-box {
+      background: #1a0a0a;
+      border: 1px solid #7f1d1d;
+      border-radius: 10px;
+      padding: 1rem;
+      color: #f87171;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .loading-bar {
+      height: 2px;
+      background: #1e2d40;
+      border-radius: 2px;
+      margin-top: 1rem;
+      overflow: hidden;
+      display: none;
+    }
+
+    .loading-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #00c896;
+      border-radius: 2px;
+      animation: load 8s linear forwards;
+    }
+
+    @keyframes load {
+      0% { width: 0%; }
+      90% { width: 85%; }
+      100% { width: 85%; }
+    }
+
+    .footer {
+      margin-top: 1.5rem;
+      font-size: 11px;
+      color: #1e2d40;
+      text-align: center;
+      font-family: 'Space Mono', monospace;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Stock Predictor</h1>
-    <p class="subtitle">ML-powered next-day price prediction</p>
 
-    <label for="ticker">Stock Symbol</label>
-    <input type="text" id="ticker" placeholder="e.g. AAPL, TSLA, MSFT" value="AAPL">
+  <div class="header">
+    <div class="badge">ML POWERED · LINEAR REGRESSION</div>
+    <h1>Stock<span>AI</span></h1>
+    <p class="subtitle">Next-day closing price prediction using machine learning</p>
+  </div>
 
-    <button id="predictBtn" onclick="getPrediction()">Predict Price</button>
-    <p class="loading" id="loading">Fetching data & predicting...</p>
+  <div class="main-card">
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-label">Model</div>
+        <div class="stat-value">Lin. Reg</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Data Source</div>
+        <div class="stat-value">yFinance</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Window</div>
+        <div class="stat-value">5 Days</div>
+      </div>
+    </div>
 
-    <div class="result" id="result">
-      <div class="label">Predicted next-day closing price</div>
-      <div class="price" id="price">—</div>
-      <div class="info" id="info"></div>
+    <hr class="divider">
+
+    <label class="input-label">Enter stock symbol</label>
+    <div class="input-row">
+      <input type="text" id="ticker" placeholder="AAPL" value="AAPL" maxlength="6">
+      <button id="predictBtn" onclick="getPrediction()">Predict →</button>
+    </div>
+
+    <div class="loading-bar" id="loadingBar">
+      <div class="loading-bar-fill" id="loadingFill"></div>
+    </div>
+
+    <div class="result-area" id="resultArea">
+      <hr class="divider">
+      <div class="result-header">
+        <span class="result-title">Prediction Result</span>
+        <span class="live-dot">LIVE</span>
+      </div>
+
+      <div id="resultContent"></div>
     </div>
   </div>
+
+  <div class="footer">STOCKAI v1.0 · AWS EC2 · FLASK API</div>
 
   <script>
     async function getPrediction() {
@@ -89,36 +348,62 @@
       if (!ticker) { alert("Please enter a stock symbol!"); return; }
 
       const btn = document.getElementById("predictBtn");
-      const loading = document.getElementById("loading");
-      const result = document.getElementById("result");
+      const loadingBar = document.getElementById("loadingBar");
+      const loadingFill = document.getElementById("loadingFill");
+      const resultArea = document.getElementById("resultArea");
+      const resultContent = document.getElementById("resultContent");
 
       btn.disabled = true;
-      btn.textContent = "Predicting...";
-      loading.style.display = "block";
-      result.style.display = "none";
-      result.className = "result";
+      btn.textContent = "Loading...";
+      loadingBar.style.display = "block";
+      loadingFill.style.animation = "none";
+      loadingFill.offsetHeight;
+      loadingFill.style.animation = "load 8s linear forwards";
+      resultArea.style.display = "none";
 
       try {
         const res = await fetch(`/predict?ticker=${ticker}`);
         const data = await res.json();
 
         if (data.status === "success") {
-          document.getElementById("price").textContent = "$" + data.predicted_price;
-          document.getElementById("info").textContent = ticker + " · USD · Next Trading Day Estimate";
+          const price = data.predicted_price;
+          resultContent.innerHTML = `
+            <div class="price-display">
+              <div class="price-ticker">${ticker} · NASDAQ · USD</div>
+              <div class="price-value">$${price}</div>
+              <div class="price-note">Predicted next trading day close</div>
+            </div>
+            <div class="metrics-row">
+              <div class="metric-box">
+                <div class="metric-label">Algorithm</div>
+                <div class="metric-value">Linear Reg.</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-label">Training Data</div>
+                <div class="metric-value">6 Months</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-label">Features</div>
+                <div class="metric-value">5-day window</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-label">Currency</div>
+                <div class="metric-value">USD</div>
+              </div>
+            </div>`;
         } else {
-          result.classList.add("error");
-          document.getElementById("price").textContent = "Error: " + data.message;
+          resultContent.innerHTML = `<div class="error-box">Error: ${data.message}</div>`;
         }
-        result.style.display = "block";
+
+        resultArea.style.display = "block";
       } catch (err) {
-        result.classList.add("error");
-        result.style.display = "block";
-        document.getElementById("price").textContent = "Could not connect to server.";
+        resultContent.innerHTML = `<div class="error-box">Could not connect to server.</div>`;
+        resultArea.style.display = "block";
       }
 
       btn.disabled = false;
-      btn.textContent = "Predict Price";
-      loading.style.display = "none";
+      btn.textContent = "Predict →";
+      loadingBar.style.display = "none";
     }
   </script>
 </body>
