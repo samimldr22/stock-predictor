@@ -12,7 +12,7 @@ def predict():
     ticker = request.args.get("ticker", "AAPL").upper()
     try:
         train_model(ticker)
-        price = predict_next()
+        price = predict_next(ticker)
         return jsonify({
             "ticker": ticker,
             "predicted_price": price,
